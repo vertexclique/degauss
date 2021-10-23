@@ -1,16 +1,19 @@
-use avro_rs::{Schema, schema_compatibility::SchemaCompatibility};
+use avro_rs::{schema_compatibility::SchemaCompatibility, Schema};
+use std::collections::HashMap;
+use strum::IntoEnumIterator;
 
 /// Chronological order of satisfaction of check for schemas
 pub enum DegaussChronologyType {
     Latest,
-    All
+    All,
 }
 
+#[derive(Debug, strum_macros::EnumIter, PartialEq, Eq, Hash, strum_macros::Display)]
 /// Check level types between schemas
 pub enum DegaussCheckType {
     CanRead,
     CanBeReadBy,
-    MutualRead
+    MutualRead,
 }
 
 ///
@@ -27,9 +30,8 @@ pub enum DegaussCompatMode {
     /// Also known as 'full'. Can read the data written by, a write data readable by the most recent previous schema.
     MutualReadWithLatest,
     /// Also known as 'full transitive'. Can read the data written by, a write data readable by all earlier schemas.
-    MutualReadWithAll
+    MutualReadWithAll,
 }
-
 
 // /** Also known as 'backwards'. Can read the data written by the most recent previous schema. */
 // CAN_READ_LATEST(ChronologyType.LATEST, CheckType.CAN_READ),
@@ -44,16 +46,32 @@ pub enum DegaussCompatMode {
 // /** Also known as 'full transitive'. Can read the data written by, a write data readable by all earlier schemas. */
 // MUTUAL_READ_WITH_ALL(ChronologyType.ALL, CheckType.MUTUAL_READ);
 
-
 pub struct DegaussCheck(DegaussCheckType);
 
 impl DegaussCheck {
-    fn validate(&self, validate: &Schema, existing: &Schema) -> bool {
+    pub fn validate(&self, validate: &Schema, existing: &Schema) -> bool {
         match self.0 {
             DegaussCheckType::CanRead => SchemaCompatibility::can_read(existing, validate),
             DegaussCheckType::CanBeReadBy => SchemaCompatibility::can_read(validate, existing),
             DegaussCheckType::MutualRead => SchemaCompatibility::mutual_read(validate, existing),
-            _ => false
+            _ => false,
         }
+    }
+
+    pub fn validate_all(validate: &Schema, existing: &Schema) -> HashMap<DegaussCheckType, bool> {
+        let mut results: HashMap<DegaussCheckType, bool> = HashMap::with_capacity(3);
+
+        for check in DegaussCheckType::iter() {
+            let result = match check {
+                DegaussCheckType::CanRead => SchemaCompatibility::can_read(existing, validate),
+                DegaussCheckType::CanBeReadBy => SchemaCompatibility::can_read(validate, existing),
+                DegaussCheckType::MutualRead => {
+                    SchemaCompatibility::mutual_read(validate, existing)
+                }
+                _ => false,
+            };
+            results.insert(check, result);
+        }
+        results
     }
 }

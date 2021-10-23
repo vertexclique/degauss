@@ -1,32 +1,55 @@
-mod errors;
 mod compat;
+mod errors;
+mod schema;
+mod table;
 
-use crate::errors::*;
-use crate::compat::*;
-use clap::{Arg, App};
+use avro_rs::Schema;
+use schema::FromFile;
+use std::path::PathBuf;
+use structopt::StructOpt;
+
+use crate::compat::DegaussCheck;
+
+const VERSION: &str = env!("CARGO_PKG_VERSION");
+const AUTHORS: &str = env!("CARGO_PKG_AUTHORS");
+
+#[derive(StructOpt, Debug)]
+#[structopt(name = "degauss",  version = VERSION, author = AUTHORS)]
+/// Kafka schema compatibility checker
+struct Degauss {
+    /// Activate debug mode
+    #[structopt(short, long)]
+    debug: bool,
+
+    /// Old schema file
+    #[structopt(short, long, parse(from_os_str))]
+    old: PathBuf,
+
+    /// New schema file
+    #[structopt(short, long, parse(from_os_str))]
+    new: PathBuf,
+
+    /// Print the exit status
+    #[structopt(short, long)]
+    exit_status: bool,
+}
 
 fn main() {
-    let matches = App::new("Degauss")
-        .version("1.0")
-        .author("Theo B. <vertexclique@gmail.com>")
-        .about("Avro schema compatibility tool")
-        .arg(Arg::new("compat")
-            .short('c')
-            .long("compatibility")
-            .about("Given compatibility type to check")
-            .required(true)
-            .takes_value(true))
-        .arg(Arg::new("schemas")
-            .short('s')
-            .about("List of schemas to check against the compatibility type")
-            .required(true)
-            .min_values(2))// At least 2 schemas needed to be checked
-        .arg(Arg::new("v")
-            .short('v')
-            .multiple_occurrences(true)
-            .takes_value(true)
-            .about("Sets the level of verbosity"))
-        .get_matches();
+    let matches: Degauss = Degauss::from_args();
+    let old = Schema::parse_file(&matches.old)
+        .unwrap_or_else(|_| panic!("Failed to find file {:?}", &matches.old));
 
-    println!("Hello, world!");
+    let new = Schema::parse_file(&matches.new)
+        .unwrap_or_else(|_| panic!("Failed to find file {:?}", &matches.new));
+
+    let compatibility = DegaussCheck::validate_all(&new, &old);
+    table::render(&compatibility);
+
+    if matches.exit_status {
+        if !compatibility.values().all(|x| *x) {
+            std::process::exit(1);
+        } else {
+            std::process::exit(0);
+        }
+    }
 }
