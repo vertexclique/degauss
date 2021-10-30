@@ -22,7 +22,7 @@ struct Degauss {
     #[structopt(short, long)]
     debug: bool,
 
-    /// All schemas in chronological order
+    /// All schemas in chronological order. From oldest to newest.
     #[structopt(short, long, parse(from_os_str))]
     schemas: Vec<PathBuf>,
 
