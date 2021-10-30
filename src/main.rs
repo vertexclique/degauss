@@ -6,7 +6,7 @@ mod table;
 use avro_rs::Schema;
 use compat::DegaussCompatMode;
 use schema::FromFile;
-use std::path::PathBuf;
+use std::{panic, path::PathBuf};
 use structopt::StructOpt;
 
 use crate::compat::DegaussCheck;
@@ -38,27 +38,40 @@ struct Degauss {
 fn main() {
     let matches: Degauss = Degauss::from_args();
 
-    let schemas = matches.schemas
+    let schemas = matches
+        .schemas
         .iter()
-        .map(|e| Schema::parse_file(e)
-            .unwrap_or_else(|op| panic!("Failed to find file {:#?}", op)))
+        .map(|e| Schema::parse_file(e).unwrap_or_else(|op| panic!("Failed to find file {:#?}", op)))
         .collect::<Vec<Schema>>();
 
-    
-    // let old = Schema::parse_file(&matches.schemas)
-    //     .unwrap_or_else(|_| panic!("Failed to find file {:?}", &matches.old));
+    match (schemas.len(), matches.compat.clone()) {
+        (1, _) => panic!("There is nothing to compare against. Exiting."),
+        (2, DegaussCompatMode::Backwards | DegaussCompatMode::Forwards | DegaussCompatMode::Full) => {
+            let dc = DegaussCheck(matches.compat);
+            let compatibility = dc.tabular_validate(&schemas);
+            table::render(&compatibility);
 
-    // let new = Schema::parse_file(&matches.new)
-    //     .unwrap_or_else(|_| panic!("Failed to find file {:?}", &matches.new));
+            if matches.exit_status {
+                if !compatibility.values().all(|x| *x) {
+                    std::process::exit(1);
+                } else {
+                    std::process::exit(0);
+                }
+            }
+        },
+        (sl, DegaussCompatMode::BackwardsTransitive | DegaussCompatMode::ForwardsTransitive | DegaussCompatMode::FullTransitive) if sl >= 2 => {
+            let dc = DegaussCheck(matches.compat);
+            let compatibility = dc.tabular_validate(&schemas);
+            table::render(&compatibility);
 
-    // let compatibility = DegaussCheck::validate_all(&new, &old);
-    // table::render(&compatibility);
-
-    // if matches.exit_status {
-    //     if !compatibility.values().all(|x| *x) {
-    //         std::process::exit(1);
-    //     } else {
-    //         std::process::exit(0);
-    //     }
-    // }
+            if matches.exit_status {
+                if !compatibility.values().all(|x| *x) {
+                    std::process::exit(1);
+                } else {
+                    std::process::exit(0);
+                }
+            }
+        }
+        (a, e) => panic!("Schema count and compatibility check failure. {} compatibility and {} schemas are not comparable.", e, a)
+    }
 }
