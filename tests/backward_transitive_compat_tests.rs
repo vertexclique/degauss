@@ -1,5 +1,5 @@
-/// Backward compatibility: A new schema is backward compatible if it can be used to read the data written in the
-/// previous schema.
+/// Backward transitive compatibility: A new schema is backward compatible if it can be used to read the data written
+/// in all previous schemas.
 #[cfg(test)]
 mod backward_transitive_compat {
     use std::{path::PathBuf, str::FromStr};

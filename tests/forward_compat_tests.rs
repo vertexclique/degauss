@@ -1,6 +1,8 @@
 /// Backward compatibility: A new schema is backward compatible if it can be used to read the data written in the
 /// previous schema.
 #[cfg(test)]
+/// Forward compatibility: A new schema is forward compatible if the previous schema can read data written in this
+/// schema.
 mod forward_compat {
     use std::{path::PathBuf, str::FromStr};
 

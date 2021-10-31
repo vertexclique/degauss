@@ -1,5 +1,4 @@
-/// Backward compatibility: A new schema is backward compatible if it can be used to read the data written in the
-/// previous schema.
+/// Full compatibility: A new schema is fully compatible if it’s both backward and forward compatible.
 #[cfg(test)]
 mod full_compat {
     use std::{path::PathBuf, str::FromStr};
