@@ -44,7 +44,7 @@ fn main() {
         .map(|e| Schema::parse_file(e).unwrap_or_else(|op| panic!("Failed to find file {:#?}", op)))
         .collect::<Vec<Schema>>();
 
-    match (schemas.len(), matches.compat.clone()) {
+    match (schemas.len(), matches.compat) {
         (1, _) => panic!("There is nothing to compare against. Exiting."),
         (2, DegaussCompatMode::Backwards | DegaussCompatMode::Forwards | DegaussCompatMode::Full) => {
             let dc = DegaussCheck(matches.compat);

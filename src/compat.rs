@@ -1,8 +1,6 @@
 use avro_rs::{schema_compatibility::SchemaCompatibility, Schema};
-use std::borrow::BorrowMut;
 use std::collections::HashMap;
 use std::ffi::OsStr;
-use std::fmt::Debug;
 use std::{fmt, panic};
 use strum::IntoEnumIterator;
 
