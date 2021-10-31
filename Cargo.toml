@@ -6,6 +6,13 @@ authors = [
     "Theo B. <vertexclique@gmail.com>",
     "Ankur S. <asrivas.cs@gmail.com>"
 ]
+keywords = ["schema-compatibility", "compatibility", "serialization"]
+categories = ["development-tools", "command-line-utilities"]
+homepage = "https://github.com/vertexclique/degauss"
+repository = "https://github.com/vertexclique/degauss"
+documentation = "https://docs.rs/degauss"
+readme = "README.md"
+license = "Apache-2.0/MIT"
 description = "Your friendly neighborhood Avro schema compatibility checker."
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
