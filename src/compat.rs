@@ -1,68 +1,47 @@
 use avro_rs::{schema_compatibility::SchemaCompatibility, Schema};
 use std::collections::HashMap;
-use std::ffi::OsStr;
-use std::{fmt, panic};
-
-use crate::errors::DegaussError;
+use strum_macros::{Display, EnumIter, EnumString, EnumVariantNames};
 
 ///
 /// Possible compatibility mode array between schemas
 #[derive(
-    strum_macros::EnumIter, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, strum_macros::Display,
+    EnumIter,
+    EnumVariantNames,
+    EnumString,
+    Display,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    Debug,
 )]
 pub enum DegaussCompatMode {
     /// Can read the data written by the most recent previous schema.
+    #[strum(serialize = "backwards")]
     Backwards,
+
     /// Can read the data written by all earlier schemas.
+    #[strum(serialize = "backwards-transitive")]
     BackwardsTransitive,
-    /// The data written by this schema can be read by the most recent previous schema.    
+
+    /// The data written by this schema can be read by the most recent previous schema.  
+    #[strum(serialize = "forwards")]
     Forwards,
+
     /// The data written by this schema can be read by all earlier schemas.
+    #[strum(serialize = "forwards-transitive")]
     ForwardsTransitive,
+
     /// Can read the data written by, a write data readable by the most recent previous schema.
+    #[strum(serialize = "full")]
     Full,
+
     /// Can read the data written by, a write data readable by all earlier schemas.
+    #[strum(serialize = "full-transitive")]
     FullTransitive,
-}
-
-impl fmt::Debug for DegaussCompatMode {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::Backwards => write!(f, "Backwards"),
-            Self::BackwardsTransitive => write!(f, "BackwardsTransitive"),
-            Self::Forwards => write!(f, "Forwards"),
-            Self::ForwardsTransitive => write!(f, "ForwardsTransitive"),
-            Self::Full => write!(f, "Full"),
-            Self::FullTransitive => write!(f, "FullTransitive"),
-        }
-    }
-}
-
-impl TryFrom<&str> for DegaussCompatMode {
-    type Error = DegaussError;
-
-    fn try_from(s: &str) -> Result<Self, Self::Error> {
-        Ok(match s.to_lowercase().as_str() {
-            "backwards" => Self::Backwards,
-            "backwards-transitive" | "backwardstransitive" => Self::BackwardsTransitive,
-            "forwards" => Self::Forwards,
-            "forwards-transitive" | "forwardstransitive" => Self::ForwardsTransitive,
-            "full" => Self::Full,
-            "full-transitive" | "fulltransitive" => Self::FullTransitive,
-            _ => return Err(DegaussError::ParseFailure),
-        })
-    }
-}
-
-impl From<&OsStr> for DegaussCompatMode {
-    fn from(s: &OsStr) -> Self {
-        s.to_owned()
-            .into_string()
-            .unwrap_or_else(|op| panic!("Failed to decode compatibility: {:#?}", op))
-            .as_str()
-            .try_into()
-            .unwrap()
-    }
 }
 
 // /// Also known as 'backwards'. Can read the data written by the most recent previous schema.

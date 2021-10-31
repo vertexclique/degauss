@@ -3,13 +3,13 @@ mod errors;
 mod schema;
 mod table;
 
+use crate::compat::DegaussCheck;
 use avro_rs::Schema;
 use compat::DegaussCompatMode;
 use schema::FromFile;
 use std::{panic, path::PathBuf};
 use structopt::StructOpt;
-
-use crate::compat::DegaussCheck;
+use strum::VariantNames;
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 const AUTHORS: &str = env!("CARGO_PKG_AUTHORS");
@@ -27,7 +27,7 @@ struct Degauss {
     schemas: Vec<PathBuf>,
 
     /// Compat Mode to check against
-    #[structopt(short, long, parse(from_os_str))]
+    #[structopt(short, long,  possible_values = DegaussCompatMode::VARIANTS, case_insensitive = true,)]
     compat: DegaussCompatMode,
 
     /// Print the exit status
