@@ -1,9 +1,6 @@
 name: cicd
 
 on:
-  # NB: this differs from the book's project!
-  # These settings allow us to run this specific CI pipeline for PRs against
-  # this specific branch (a.k.a. book chapter).
   push:
     branches:
       - main
@@ -13,6 +10,8 @@ on:
     branches:
       - main
       - master
+  schedule:
+    - cron: "0 7 * * *"
 
 env:
   CARGO_TERM_COLOR: always
@@ -82,21 +81,3 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           args: -- -D warnings
-
-  # coverage:
-  #   name: Code coverage
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Checkout repository
-  #       uses: actions/checkout@v2
-
-  #     - name: Install stable toolchain
-  #       uses: actions-rs/toolchain@v1
-  #       with:
-  #         toolchain: stable
-  #         override: true
-
-  #     - name: Run cargo-tarpaulin
-  #       uses: actions-rs/tarpaulin@v0.1
-  #       with:
-  #         args: '--ignore-tests --avoid-cfg-tarpaulin'
