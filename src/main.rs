@@ -4,8 +4,9 @@ mod schema;
 mod table;
 
 use avro_rs::Schema;
+use compat::DegaussCompatMode;
 use schema::FromFile;
-use std::path::PathBuf;
+use std::{panic, path::PathBuf};
 use structopt::StructOpt;
 
 use crate::compat::DegaussCheck;
@@ -21,13 +22,13 @@ struct Degauss {
     #[structopt(short, long)]
     debug: bool,
 
-    /// Old schema file
+    /// All schemas in chronological order. From oldest to newest.
     #[structopt(short, long, parse(from_os_str))]
-    old: PathBuf,
+    schemas: Vec<PathBuf>,
 
-    /// New schema file
+    /// Compat Mode to check against
     #[structopt(short, long, parse(from_os_str))]
-    new: PathBuf,
+    compat: DegaussCompatMode,
 
     /// Print the exit status
     #[structopt(short, long)]
@@ -36,20 +37,41 @@ struct Degauss {
 
 fn main() {
     let matches: Degauss = Degauss::from_args();
-    let old = Schema::parse_file(&matches.old)
-        .unwrap_or_else(|_| panic!("Failed to find file {:?}", &matches.old));
 
-    let new = Schema::parse_file(&matches.new)
-        .unwrap_or_else(|_| panic!("Failed to find file {:?}", &matches.new));
+    let schemas = matches
+        .schemas
+        .iter()
+        .map(|e| Schema::parse_file(e).unwrap_or_else(|op| panic!("Failed to find file {:#?}", op)))
+        .collect::<Vec<Schema>>();
 
-    let compatibility = DegaussCheck::validate_all(&new, &old);
-    table::render(&compatibility);
+    match (schemas.len(), matches.compat) {
+        (1, _) => panic!("There is nothing to compare against. Exiting."),
+        (2, DegaussCompatMode::Backwards | DegaussCompatMode::Forwards | DegaussCompatMode::Full) => {
+            let dc = DegaussCheck(matches.compat);
+            let compatibility = dc.tabular_validate(&schemas);
+            table::render(&compatibility);
 
-    if matches.exit_status {
-        if !compatibility.values().all(|x| *x) {
-            std::process::exit(1);
-        } else {
-            std::process::exit(0);
+            if matches.exit_status {
+                if !compatibility.values().all(|x| *x) {
+                    std::process::exit(1);
+                } else {
+                    std::process::exit(0);
+                }
+            }
+        },
+        (sl, DegaussCompatMode::BackwardsTransitive | DegaussCompatMode::ForwardsTransitive | DegaussCompatMode::FullTransitive) if sl >= 2 => {
+            let dc = DegaussCheck(matches.compat);
+            let compatibility = dc.tabular_validate(&schemas);
+            table::render(&compatibility);
+
+            if matches.exit_status {
+                if !compatibility.values().all(|x| *x) {
+                    std::process::exit(1);
+                } else {
+                    std::process::exit(0);
+                }
+            }
         }
+        (a, e) => panic!("Schema count and compatibility check failure. {} compatibility and {} schemas are not comparable.", e, a)
     }
 }

@@ -1,0 +1,14 @@
+{
+    "type": "record",
+    "name": "myrecord",
+    "fields": [
+        {
+            "type": [
+                "null",
+                "string"
+            ],
+            "name": "f1",
+            "doc": "doc of f1"
+        }
+    ]
+}

@@ -1,6 +1,15 @@
 ## DeGauss
-You friendly neighborhood Kafka-Schema compatibility checker.
+Your friendly neighborhood Avro schema compatibility checker.
+
+## Install
+
+```
+cargo install degauss
+```
+
 
 ## Run
 
-cargo build && ./target/debug/degauss --old tests/data/movies-raw-reader.avsc  --new tests/data/movies-raw-writer.avsc --exit-status
+```
+cargo run -- -s tests/data/movies-raw-reader.avsc tests/data/movies-raw-writer.avsc -c full-transitive --exit-status
+```
