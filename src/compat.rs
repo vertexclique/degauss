@@ -2,7 +2,6 @@ use avro_rs::{schema_compatibility::SchemaCompatibility, Schema};
 use std::collections::HashMap;
 use std::ffi::OsStr;
 use std::{fmt, panic};
-use strum::IntoEnumIterator;
 
 use crate::errors::DegaussError;
 
@@ -35,7 +34,6 @@ impl fmt::Debug for DegaussCompatMode {
             Self::ForwardsTransitive => write!(f, "ForwardsTransitive"),
             Self::Full => write!(f, "Full"),
             Self::FullTransitive => write!(f, "FullTransitive"),
-            _ => write!(f, "Unknown"),
         }
     }
 }

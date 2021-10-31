@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use crate::compat::DegaussCompatMode;
 use comfy_table::Table;
 use std::collections::HashMap;
