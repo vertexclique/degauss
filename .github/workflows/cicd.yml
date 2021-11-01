@@ -81,3 +81,48 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           args: -- -D warnings
+
+  coverage:
+    name: Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Install stable toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Install tarpaulin
+        if: github.ref == 'refs/heads/master' || github.event_name == 'pull_request'
+        continue-on-error: true
+        run: |
+          cargo install cargo-tarpaulin
+
+      - name: Cache dependencies
+        id: cache-dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+            ~/.cargo/bin
+          key: ${{ runner.os }}-cargo-bin-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Generate coverage report
+        if: github.ref == 'refs/heads/master' || github.event_name == 'pull_request'
+        continue-on-error: true
+        run: |
+          cargo tarpaulin --out Xml --all --all-features
+
+      - name: Upload to Codecov
+        if: github.ref == 'refs/heads/master' || github.event_name == 'pull_request'
+        continue-on-error: true
+        uses: codecov/codecov-action@v2
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: cobertura.xml
