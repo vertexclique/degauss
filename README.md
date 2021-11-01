@@ -7,6 +7,7 @@
 [![cicd](https://github.com/vertexclique/degauss/actions/workflows/cicd.yml/badge.svg)](https://github.com/vertexclique/degauss/actions/workflows/cicd.yml)
 [![Crates.io](https://img.shields.io/crates/v/degauss)](https://crates.io/crates/degauss)
 [![Docs.rs](https://docs.rs/degauss/badge.svg)](https://docs.rs/degauss)
+[![codecov](https://codecov.io/gh/vertexclique/degauss/branch/master/graph/badge.svg)](https://codecov.io/gh/vertexclique/degauss)
 </p>
 </div>
 </br>
