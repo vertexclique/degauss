@@ -4,7 +4,7 @@ use comfy_table::Table;
 use std::collections::HashMap;
 
 /// Render the HashMap with its values
-pub(crate) fn render(payload: &HashMap<DegaussCompatMode, bool>) {
+pub fn render(payload: &HashMap<DegaussCompatMode, bool>) {
     let mut table = Table::new();
     table.set_header(vec!["Compatibility", "Status"]);
     for (key, value) in payload.iter() {

@@ -12,7 +12,7 @@ mod backward_compat {
             Schema::parse_file("tests/data/schema2.avsc").unwrap(),
             Schema::parse_file("tests/data/schema1.avsc").unwrap(),
         ];
-        let dc = DegaussCheck(DegaussCompatMode::Backwards);
+        let dc = DegaussCheck(DegaussCompatMode::Backward);
         assert_eq!(dc.validate(&schemas), true);
     }
 
@@ -22,7 +22,7 @@ mod backward_compat {
             Schema::parse_file("tests/data/schema3.avsc").unwrap(),
             Schema::parse_file("tests/data/schema1.avsc").unwrap(),
         ];
-        let dc = DegaussCheck(DegaussCompatMode::Backwards);
+        let dc = DegaussCheck(DegaussCompatMode::Backward);
         assert_eq!(dc.validate(&schemas), false);
     }
 
@@ -32,7 +32,7 @@ mod backward_compat {
             Schema::parse_file("tests/data/schema6.avsc").unwrap(),
             Schema::parse_file("tests/data/schema1.avsc").unwrap(),
         ];
-        let dc = DegaussCheck(DegaussCompatMode::Backwards);
+        let dc = DegaussCheck(DegaussCompatMode::Backward);
         assert_eq!(dc.validate(&schemas), true);
     }
 
@@ -42,7 +42,7 @@ mod backward_compat {
             Schema::parse_file("tests/data/schema1.avsc").unwrap(),
             Schema::parse_file("tests/data/schema6.avsc").unwrap(),
         ];
-        let dc = DegaussCheck(DegaussCompatMode::Backwards);
+        let dc = DegaussCheck(DegaussCompatMode::Backward);
         assert_eq!(dc.validate(&schemas), false);
     }
 
@@ -52,7 +52,7 @@ mod backward_compat {
             Schema::parse_file("tests/data/schema7.avsc").unwrap(),
             Schema::parse_file("tests/data/schema6.avsc").unwrap(),
         ];
-        let dc = DegaussCheck(DegaussCompatMode::Backwards);
+        let dc = DegaussCheck(DegaussCompatMode::Backward);
         assert_eq!(dc.validate(&schemas), true);
     }
 
@@ -62,7 +62,7 @@ mod backward_compat {
             Schema::parse_file("tests/data/schema6.avsc").unwrap(),
             Schema::parse_file("tests/data/schema7.avsc").unwrap(),
         ];
-        let dc = DegaussCheck(DegaussCompatMode::Backwards);
+        let dc = DegaussCheck(DegaussCompatMode::Backward);
         assert_eq!(dc.validate(&schemas), false);
     }
 
@@ -73,7 +73,7 @@ mod backward_compat {
             Schema::parse_file("tests/data/schema2.avsc").unwrap(),
             Schema::parse_file("tests/data/schema3.avsc").unwrap(),
         ];
-        let dc = DegaussCheck(DegaussCompatMode::BackwardsTransitive);
+        let dc = DegaussCheck(DegaussCompatMode::BackwardTransitive);
         assert_eq!(dc.validate(&schemas), true);
     }
 }

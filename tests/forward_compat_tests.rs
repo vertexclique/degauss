@@ -14,7 +14,7 @@ mod forward_compat {
             Schema::parse_file("tests/data/schema2.avsc").unwrap(),
             Schema::parse_file("tests/data/schema1.avsc").unwrap(),
         ];
-        let dc = DegaussCheck(DegaussCompatMode::Forwards);
+        let dc = DegaussCheck(DegaussCompatMode::Forward);
         assert_eq!(dc.validate(&schemas), true);
     }
 
@@ -24,7 +24,7 @@ mod forward_compat {
             Schema::parse_file("tests/data/schema3.avsc").unwrap(),
             Schema::parse_file("tests/data/schema1.avsc").unwrap(),
         ];
-        let dc = DegaussCheck(DegaussCompatMode::Forwards);
+        let dc = DegaussCheck(DegaussCompatMode::Forward);
         assert_eq!(dc.validate(&schemas), true);
     }
 
@@ -34,7 +34,7 @@ mod forward_compat {
             Schema::parse_file("tests/data/schema3.avsc").unwrap(),
             Schema::parse_file("tests/data/schema2.avsc").unwrap(),
         ];
-        let dc = DegaussCheck(DegaussCompatMode::Forwards);
+        let dc = DegaussCheck(DegaussCompatMode::Forward);
         assert_eq!(dc.validate(&schemas), true);
     }
 
@@ -44,7 +44,7 @@ mod forward_compat {
             Schema::parse_file("tests/data/schema2.avsc").unwrap(),
             Schema::parse_file("tests/data/schema3.avsc").unwrap(),
         ];
-        let dc = DegaussCheck(DegaussCompatMode::Forwards);
+        let dc = DegaussCheck(DegaussCompatMode::Forward);
         assert_eq!(dc.validate(&schemas), true);
     }
 
@@ -55,7 +55,7 @@ mod forward_compat {
             Schema::parse_file("tests/data/schema2.avsc").unwrap(),
             Schema::parse_file("tests/data/schema1.avsc").unwrap(),
         ];
-        let dc = DegaussCheck(DegaussCompatMode::Forwards);
+        let dc = DegaussCheck(DegaussCompatMode::Forward);
         assert_eq!(dc.validate(&schemas), true);
     }
 }
