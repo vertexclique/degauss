@@ -91,7 +91,7 @@ pub enum DegaussCompatMode {
 // /** Also known as 'full transitive'. Can read the data written by, a write data readable by all earlier schemas. */
 // MUTUAL_READ_WITH_ALL(ChronologyType.ALL, CheckType.MUTUAL_READ);
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct DegaussCheck(pub DegaussCompatMode);
 
 impl DegaussCheck {

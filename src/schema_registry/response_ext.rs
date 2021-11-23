@@ -20,18 +20,24 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+//! Trait to check for errors from Schema Registry and convert it to
+//! a struct. This is helpful in deserializing the schema registry errors.
+//!
+//! In case the status is not successful, parse the errors and return the
+//! corresponding error code
+//! ```json
+//! { error_code: i32, message: String }
+//! ```
+
 use crate::errors::DegaussError;
 use crate::schema_registry::types::*;
 
 use isahc::{prelude::*, Body, Response};
 
+/// ResponseExt trait for checking errors in the incoming response
+/// from Kafka Schema Registry
 pub trait ResponseExt {
-    fn check_for_error(self) -> Result<Response<Body>, DegaussError>;
-}
-
-/// Implements the FromFile trait for reading Schema from a given file
-impl ResponseExt for Response<Body> {
-    /// Check for error in the incoming response
+    /// Check for error in the incoming response from Kafka Schema Registry
     ///
     /// In case the status is not successful, parse the errors and return the
     /// corresponding error code
@@ -39,6 +45,10 @@ impl ResponseExt for Response<Body> {
     /// ```json
     /// { error_code: i32, message: String }
     /// ```
+    fn check_for_error(self) -> Result<Response<Body>, DegaussError>;
+}
+
+impl ResponseExt for Response<Body> {
     fn check_for_error(mut self) -> Result<Response<Body>, DegaussError> {
         match self.status().is_success() {
             true => Ok(Response::new(self.into_body())),

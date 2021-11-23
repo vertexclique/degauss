@@ -20,6 +20,24 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+//!
+//! A lightweight schema registry client to interact with Kafka Schema Registry.
+//!
+//! ### Usage
+//! ```rust, no_run
+//! use degauss::prelude::*;
+//! // if username/password is provided
+//! let auth = Auth::Basic {
+//!  username: "user".to_string(),
+//!  password: "pass".to_string(),
+//! };
+//!
+//! // if no username/password then
+//! // let auth = Auth::Skip;
+//! let client = SchemaRegistryClient::new("http://url-of-schema-registry", auth).expect("Failed to create a Schema Registry client");
+//! // Use your client to interact with schema registry
+//!```
+//!
 mod client;
 pub use client::SchemaRegistryClient;
 mod response_ext;

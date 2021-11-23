@@ -22,6 +22,7 @@ use crate::compat::DegaussCompatMode;
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#[derive(Debug)]
 pub enum Auth {
     Basic { username: String, password: String },
     Skip,

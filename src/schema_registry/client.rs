@@ -39,7 +39,6 @@ use std::time::Duration;
 ///
 /// ```rust,no_run
 /// use degauss::prelude::*;
-/// use degauss::SchemaRegistryClient;
 ///
 /// let client = SchemaRegistryClient::new("http://localhost:8081",
 ///         Auth::Basic{
@@ -48,6 +47,7 @@ use std::time::Duration;
 ///     })
 ///     .unwrap();
 /// ```
+#[derive(Clone, Debug)]
 pub struct SchemaRegistryClient {
     httpclient: isahc::HttpClient,
     url: String,
@@ -97,7 +97,6 @@ impl SchemaRegistryClient {
     ///
     /// ```rust,no_run
     /// use degauss::prelude::*;
-    /// use degauss::SchemaRegistryClient;
     ///
     /// let client = SchemaRegistryClient::new("http://localhost:8081",
     ///         Auth::Basic{
@@ -139,7 +138,9 @@ impl SchemaRegistryClient {
             subject = self.get_subject_from_topic(topic, subject_type),
         );
 
-        let payload = serde_json::json!({ "schema": schema.canonical_form()});
+        let payload = serde_json::json!({
+            "schema": schema.canonical_form()
+        });
         let resp = self.make_request(&url, isahc::http::Method::POST, Some(&payload))?;
         Ok(resp)
     }
@@ -202,7 +203,9 @@ impl SchemaRegistryClient {
             subject = self.get_subject_from_topic(topic, subject_type),
             verbose = verbose,
         );
-        let payload = serde_json::json!({"schema": schema.canonical_form()});
+        let payload = serde_json::json!({
+            "schema": schema.canonical_form()
+        });
         let resp = self.make_request(&url, isahc::http::Method::POST, Some(&payload))?;
         Ok(resp)
     }
@@ -236,13 +239,25 @@ mod tests {
         Schema::parse_file("tests/data/schema2.avsc").unwrap()
     }
 
+    /// Generate a random length string
+    pub fn random_chars(length: usize, prefix: &str) -> String {
+        use rand::{distributions::Alphanumeric, Rng};
+
+        let suffix: String = rand::thread_rng()
+            .sample_iter(&Alphanumeric)
+            .take(length)
+            .map(char::from)
+            .collect();
+        format!("{}{}", prefix, suffix)
+    }
+
     #[test]
     fn test_register_schema() {
         let client = test_client();
-        let topic = "test";
+        let topic = random_chars(10, "test");
         let schema = test_schema();
         let res = client
-            .register_schema(&schema, topic, SchemaSubjectType::Value)
+            .register_schema(&schema, &topic, SchemaSubjectType::Value)
             .unwrap();
         assert!(res.id > 0)
     }
@@ -250,22 +265,33 @@ mod tests {
     #[test]
     fn test_set_schema() {
         let client = test_client();
-        let topic = "test";
+        let topic = random_chars(10, "test");
         let res = client
-            .set_compatibility(topic, SchemaSubjectType::Value, DegaussCompatMode::Forward)
+            .set_compatibility(&topic, SchemaSubjectType::Value, DegaussCompatMode::Forward)
             .unwrap();
         assert!(res.compatibility == DegaussCompatMode::Forward.to_string());
     }
 
     #[test]
-    fn test_get_schema() {
+    fn test_set_and_get_schema() {
         let client = test_client();
-        let topic = "test";
+        let topic = random_chars(10, "test");
+
         let res = client
-            .get_compatibility(topic, SchemaSubjectType::Value)
+            .clone()
+            .set_compatibility(
+                &topic,
+                SchemaSubjectType::Value,
+                DegaussCompatMode::Backward,
+            )
+            .unwrap();
+        assert!(res.compatibility == DegaussCompatMode::Backward.to_string());
+
+        let res = client
+            .get_compatibility(&topic, SchemaSubjectType::Value)
             .unwrap();
 
-        let want = DegaussCompatMode::Forward;
+        let want = DegaussCompatMode::Backward;
         assert!(
             res.compatibility_level == want,
             "got {} want {}",
