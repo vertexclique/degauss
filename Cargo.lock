@@ -222,7 +222,7 @@ dependencies = [
 
 [[package]]
 name = "degauss"
-version = "0.1.4"
+version = "0.1.5"
 dependencies = [
  "avro-rs",
  "comfy-table",
