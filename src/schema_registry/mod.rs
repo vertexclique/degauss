@@ -20,32 +20,28 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-//! Errors to be used with the library, converts to and from
-//! other dependencies' errors.
-
-use thiserror::Error;
-
-#[allow(dead_code)]
-#[derive(Error, Debug)]
-pub enum DegaussError {
-    #[error("File read error")]
-    IO(#[from] std::io::Error),
-
-    #[error("Schema parsing error")]
-    Schema(#[from] avro_rs::Error),
-
-    #[error("Serializing/Deserializing error")]
-    Serde(#[from] serde_json::Error),
-
-    #[error("HTTP Client error")]
-    HTTPClient(#[from] isahc::Error),
-
-    #[error("HTTP Protocol error")]
-    Http(#[from] isahc::http::Error),
-
-    #[error("Status Code `{error_code}` Message: {message}")]
-    SrHttp { error_code: i32, message: String },
-
-    #[error("{0}")]
-    Custom(String),
-}
+//!
+//! A lightweight schema registry client to interact with Kafka Schema Registry.
+//!
+//! ### Usage
+//! ```rust, no_run
+//! use degauss::prelude::*;
+//! // if username/password is provided
+//! let auth = Auth::Basic {
+//!  username: "user".to_string(),
+//!  password: "pass".to_string(),
+//! };
+//!
+//! // if no username/password then
+//! // let auth = Auth::Skip;
+//! let client = SchemaRegistryClient::new("http://url-of-schema-registry", auth).expect("Failed to create a Schema Registry client");
+//! // Use your client to interact with schema registry
+//!```
+//!
+mod client;
+pub use client::SchemaRegistryClient;
+mod response_ext;
+pub mod types;
+pub use response_ext::ResponseExt;
+mod serde_ext;
+pub use serde_ext::SerdeExt;

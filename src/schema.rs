@@ -1,3 +1,14 @@
+//!
+//! Helper traits to assist the Schema object.
+//! This can be used to read a file and convert it to avro_rs::Schema object.
+//!
+//! ```rust,no_run
+//! use avro_rs::Schema;
+//! use degauss::prelude::*;
+//! let schema = Schema::parse_file("path/to/avsc/file").unwrap();
+//! ```
+//!
+
 use crate::errors::*;
 use avro_rs::Schema;
 use std::fs::File;

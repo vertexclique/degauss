@@ -20,32 +20,34 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-//! Errors to be used with the library, converts to and from
-//! other dependencies' errors.
+use serde::Serialize;
 
-use thiserror::Error;
+/// SerdeExt trait to convert any Serializable struct to
+/// json string.
+pub trait SerdeExt {
+    /// Converts a serializable struct to pretty json
+    /// Fails in case the serde fails to convert it to pretty string.
+    ///
+    /// ```rust, no_run
+    /// use serde::Serialize;
+    /// use degauss::prelude::*;
+    ///
+    /// #[derive(Serialize)]
+    /// pub struct Test{
+    ///   pub name: String
+    /// }
+    ///
+    /// let test = Test{name:"degauss".to_string()};
+    /// println!("{}", test.pretty_string());
+    ///
+    fn pretty_string(&self) -> String;
+}
 
-#[allow(dead_code)]
-#[derive(Error, Debug)]
-pub enum DegaussError {
-    #[error("File read error")]
-    IO(#[from] std::io::Error),
-
-    #[error("Schema parsing error")]
-    Schema(#[from] avro_rs::Error),
-
-    #[error("Serializing/Deserializing error")]
-    Serde(#[from] serde_json::Error),
-
-    #[error("HTTP Client error")]
-    HTTPClient(#[from] isahc::Error),
-
-    #[error("HTTP Protocol error")]
-    Http(#[from] isahc::http::Error),
-
-    #[error("Status Code `{error_code}` Message: {message}")]
-    SrHttp { error_code: i32, message: String },
-
-    #[error("{0}")]
-    Custom(String),
+impl<T> SerdeExt for T
+where
+    T: ?Sized + Serialize,
+{
+    fn pretty_string(&self) -> String {
+        serde_json::to_string(self).unwrap()
+    }
 }
