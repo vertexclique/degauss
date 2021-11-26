@@ -141,6 +141,10 @@ jobs:
           echo ::set-output name=CARGO_TEST_OPTIONS::${CARGO_TEST_OPTIONS}
       - name: Run tests
         uses: actions-rs/cargo@v1
+        env:
+          DEGAUSS_SCHEMA_REGISTRY_URL: ${{ secrets.DEGAUSS_SCHEMA_REGISTRY_URL }}
+          DEGAUSS_SCHEMA_REGISTRY_USER: ${{ secrets.DEGAUSS_SCHEMA_REGISTRY_USER }}
+          DEGAUSS_SCHEMA_REGISTRY_PASS: ${{ secrets.DEGAUSS_SCHEMA_REGISTRY_PASS }}
         with:
           use-cross: ${{ matrix.job.use-cross }}
           command: test
