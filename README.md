@@ -15,7 +15,7 @@
 
 ## Install
 
-### Grab a release from [releases](https://github.com/vertexclique/degauss/releases)
+### Grab a binary from [releases](https://github.com/vertexclique/degauss/releases)
 
 ### Using cargo
 ```
