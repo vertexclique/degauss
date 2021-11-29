@@ -77,7 +77,6 @@ pub mod schema;
 pub mod table;
 
 pub mod schema_registry;
-
 pub mod prelude {
     pub use crate::compat::*;
     pub use crate::errors::*;

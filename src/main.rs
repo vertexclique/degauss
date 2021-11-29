@@ -20,11 +20,13 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+mod status;
 use avro_rs::Schema;
 use degauss::compat::{DegaussCheck, DegaussCompatMode};
 use degauss::prelude::{Auth, SchemaRegistryClient, SchemaSubjectType, SerdeExt};
 use degauss::schema::FromFile;
 use degauss::table;
+use status::Status;
 use std::{panic, path::PathBuf};
 use structopt::StructOpt;
 use strum::VariantNames;
@@ -60,7 +62,7 @@ struct ValidateOpts {
     compat: DegaussCompatMode,
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(StructOpt, Debug, Clone)]
 enum SRCommand {
     /// Register a given schema to kafka schema registry
     Register(RegisterOpts),
@@ -69,7 +71,7 @@ enum SRCommand {
     Compatibility(Compatibility),
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(StructOpt, Debug, Clone)]
 /// Interact with Kafka Schema Registry
 struct SchemaRegistry {
     #[structopt(long, env = "DEGAUSS_SCHEMA_REGISTRY_URL")]
@@ -96,7 +98,7 @@ enum SubCommand {
     SchemaRegistry(SchemaRegistry),
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(StructOpt, Debug, Clone)]
 /// Interact with Kafka Schema Registry
 struct Compatibility {
     #[structopt(long, env = "DEGAUSS_SCHEMA_REGISTRY_URL")]
@@ -114,7 +116,7 @@ struct Compatibility {
     cmd: CompatibilityCommand,
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(StructOpt, Debug, Clone)]
 /// Interact with Kafka Schema Registry
 enum CompatibilityCommand {
     /// Get compatibility mode for a given topic/subject on schema registry
@@ -122,9 +124,12 @@ enum CompatibilityCommand {
 
     /// Set compatibility for a given topic/subject on schema registry
     Set(CompatibilityOpts),
+
+    /// Check compatibility for a given topic/subject on schema registry
+    Check(CheckOpts),
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(StructOpt, Debug, Clone)]
 /// Interact with Kafka Schema Registry
 struct RegisterOpts {
     /// Schema registry username
@@ -140,7 +145,10 @@ struct RegisterOpts {
     schema_path: PathBuf,
 }
 
-#[derive(StructOpt, Debug)]
+/// Check Schema Registry schema compatibility
+type CheckOpts = RegisterOpts;
+
+#[derive(StructOpt, Debug, Clone)]
 /// Options to set during the interaction with compatibility
 struct CompatibilityOpts {
     /// Schema registry topic
@@ -156,7 +164,7 @@ struct CompatibilityOpts {
     compatibility: Option<DegaussCompatMode>,
 }
 
-fn validate(schemas: Vec<PathBuf>, compatibility: DegaussCompatMode) -> bool {
+fn process_validate(schemas: Vec<PathBuf>, compatibility: DegaussCompatMode) -> bool {
     let schemas = schemas
         .iter()
         .map(|e| Schema::parse_file(e).unwrap_or_else(|op| panic!("Failed to find file {:#?}", op)))
@@ -180,76 +188,103 @@ fn validate(schemas: Vec<PathBuf>, compatibility: DegaussCompatMode) -> bool {
     }
 }
 
+fn process_check(client: SchemaRegistryClient, opts: CheckOpts) -> Status {
+    let schema = Schema::parse_file(&opts.schema_path).expect("Failed to find path");
+    match client.check_compatibility(&schema, &opts.topic, opts.subject_type, true) {
+        Ok(compat) => {
+            println!("{}", compat.pretty_string());
+            if !compat.is_compatible {
+                Status::Failure
+            } else {
+                Status::Success
+            }
+        }
+        Err(e) => {
+            println!("{}", e);
+            Status::Failure
+        }
+    }
+}
+
+fn process_register(client: SchemaRegistryClient, opts: RegisterOpts) -> Status {
+    let schema = Schema::parse_file(opts.schema_path).expect("Schema file not found");
+    match client.register_schema(&schema, &opts.topic, opts.subject_type) {
+        Ok(resp) => {
+            println!("{}", resp.pretty_string());
+            Status::Success
+        }
+        Err(e) => {
+            println!("{}", e);
+            Status::Failure
+        }
+    }
+}
+
+fn process_set(client: SchemaRegistryClient, opts: CompatibilityOpts) -> Status {
+    match client.set_compatibility(&opts.topic, opts.subject_type, opts.compatibility.unwrap()) {
+        Ok(compat) => {
+            println!("{}", compat.pretty_string());
+            Status::Success
+        }
+        Err(e) => {
+            println!("{}", e);
+            Status::Failure
+        }
+    }
+}
+
+fn process_get(client: SchemaRegistryClient, opts: CompatibilityOpts) -> Status {
+    match client.get_compatibility(&opts.topic, opts.subject_type) {
+        Ok(compat) => {
+            println!("{}", compat.pretty_string());
+            Status::Success
+        }
+        Err(e) => {
+            println!("{}", e);
+            Status::Failure
+        }
+    }
+}
+
+fn create_schema_registry_client(sr: SchemaRegistry) -> SchemaRegistryClient {
+    let auth = match (sr.schema_registry_user, sr.schema_registry_pass) {
+        (Some(user), Some(pass)) => Auth::Basic {
+            username: user,
+            password: pass,
+        },
+        (None, None) => Auth::Skip,
+        _ => panic!("Please set both user/pass, not just one"),
+    };
+    SchemaRegistryClient::new(sr.schema_registry_url, auth)
+        .expect("Failed to create a Schema Registry client")
+}
+
 fn main() {
     let degauss_cli: Degauss = Degauss::from_args();
 
-    match degauss_cli.cmd {
+    let status = match degauss_cli.cmd {
         SubCommand::Validate(opts) => {
-            let valid = validate(opts.schemas, opts.compat);
-            if degauss_cli.exit_status {
-                if !valid {
-                    std::process::exit(1);
-                } else {
-                    std::process::exit(0);
-                }
+            let valid = process_validate(opts.schemas, opts.compat);
+            if !valid {
+                Status::Failure
+            } else {
+                Status::Success
             }
         }
+
         SubCommand::SchemaRegistry(sr) => {
-            let auth = match (sr.schema_registry_user, sr.schema_registry_pass) {
-                (Some(user), Some(pass)) => Auth::Basic {
-                    username: user,
-                    password: pass,
-                },
-                (None, None) => Auth::Skip,
-                _ => panic!("Please set both user/pass, not just one"),
-            };
-            let client = SchemaRegistryClient::new(sr.schema_registry_url, auth)
-                .expect("Failed to create a Schema Registry client");
+            let client = create_schema_registry_client(sr.clone());
             match sr.cmd {
                 SRCommand::Compatibility(comp) => match comp.cmd {
-                    CompatibilityCommand::Get(opts) => {
-                        match client.get_compatibility(&opts.topic, opts.subject_type) {
-                            Ok(compat) => println!("{}", compat.pretty_string()),
-                            Err(e) => {
-                                println!("{}", e);
-                                if degauss_cli.exit_status {
-                                    std::process::exit(1);
-                                }
-                            }
-                        }
-                    }
-                    CompatibilityCommand::Set(opts) => {
-                        match client.set_compatibility(
-                            &opts.topic,
-                            opts.subject_type,
-                            opts.compatibility.unwrap(),
-                        ) {
-                            Ok(compat) => println!("{}", compat.pretty_string()),
-                            Err(e) => {
-                                println!("{}", e);
-                                if degauss_cli.exit_status {
-                                    std::process::exit(1);
-                                }
-                            }
-                        }
-                    }
+                    CompatibilityCommand::Get(opts) => process_get(client, opts),
+                    CompatibilityCommand::Set(opts) => process_set(client, opts),
+                    CompatibilityCommand::Check(opts) => process_check(client, opts),
                 },
-                SRCommand::Register(opts) => {
-                    let schema =
-                        Schema::parse_file(opts.schema_path).expect("Schema file not found");
-                    match client.register_schema(&schema, &opts.topic, opts.subject_type) {
-                        Ok(resp) => {
-                            println!("{}", resp.pretty_string());
-                        }
-                        Err(e) => {
-                            println!("{}", e);
-                            if degauss_cli.exit_status {
-                                std::process::exit(1);
-                            }
-                        }
-                    }
-                }
+                SRCommand::Register(opts) => process_register(client, opts),
             }
         }
+    };
+    if degauss_cli.exit_status {
+        std::process::exit(status.to_i32())
     }
 }
