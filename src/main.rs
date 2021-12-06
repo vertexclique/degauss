@@ -38,10 +38,6 @@ const AUTHORS: &str = env!("CARGO_PKG_AUTHORS");
 #[structopt(name = "degauss",  version = VERSION, author = AUTHORS)]
 /// Kafka schema compatibility checker
 struct Degauss {
-    /// Activate debug mode
-    #[structopt(short, long, global = true)]
-    debug: bool,
-
     /// Print the exit status
     #[structopt(short, long, global = true)]
     exit_status: bool,
@@ -101,17 +97,6 @@ enum SubCommand {
 #[derive(StructOpt, Debug, Clone)]
 /// Interact with Kafka Schema Registry
 struct Compatibility {
-    #[structopt(long, env = "DEGAUSS_SCHEMA_REGISTRY_URL")]
-    schema_registry_url: String,
-
-    /// Schema registry username
-    #[structopt(long, env = "DEGAUSS_SCHEMA_REGISTRY_USER")]
-    schema_registry_user: Option<String>,
-
-    /// Schema registry password
-    #[structopt(long, env = "DEGAUSS_SCHEMA_REGISTRY_PASS")]
-    schema_registry_pass: Option<String>,
-
     #[structopt(subcommand)]
     cmd: CompatibilityCommand,
 }
