@@ -126,11 +126,14 @@ jobs:
           components: clippy
           override: true
 
+      # - name: Run clippy
+      #   uses: actions-rs/clippy-check@v1
+      #   with:
+      #     token: ${{ secrets.GITHUB_TOKEN }}
+      #     args: --message-format human -- -D warnings
       - name: Run clippy
-        uses: actions-rs/clippy-check@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          args: -- -D warnings
+        run: |
+          cargo clippy --message-format human -- -D warnings
 
   coverage:
     name: Coverage
