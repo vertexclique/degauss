@@ -23,6 +23,7 @@
 mod status;
 use avro_rs::Schema;
 use degauss::compat::{DegaussCheck, DegaussCompatMode};
+use degauss::errors::DegaussError;
 use degauss::prelude::{Auth, SchemaRegistryClient, SchemaSubjectType, SerdeExt};
 use degauss::schema::FromFile;
 use degauss::table;
@@ -192,7 +193,7 @@ fn process_check(client: SchemaRegistryClient, opts: CheckOpts) -> Status {
 }
 
 fn process_register(client: SchemaRegistryClient, opts: RegisterOpts) -> Status {
-    let schema = Schema::parse_file(opts.schema_path).expect("Schema file not found");
+    let schema = Schema::parse_file(opts.schema_path).expect("Error in parsing the schema file");
     match client.register_schema(&schema, &opts.topic, opts.subject_type) {
         Ok(resp) => {
             println!("{}", resp.pretty_string());
@@ -225,7 +226,18 @@ fn process_get(client: SchemaRegistryClient, opts: CompatibilityOpts) -> Status 
             Status::Success
         }
         Err(e) => {
-            println!("{}", e);
+            let er = match e {
+                DegaussError::SrHttp {
+                    error_code,
+                    message,
+                } => serde_json::to_string(&serde_json::json!({
+                    "error_code": error_code,
+                    "message": message,
+                }))
+                .unwrap(),
+                _ => format!("{}", e),
+            };
+            println!("{}", er);
             Status::Failure
         }
     }

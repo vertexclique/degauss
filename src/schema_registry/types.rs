@@ -22,12 +22,13 @@ use crate::compat::DegaussCompatMode;
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+use strum_macros::{Display, EnumIter, EnumString, EnumVariantNames};
+
 #[derive(Debug)]
 pub enum Auth {
     Basic { username: String, password: String },
     Skip,
 }
-use strum_macros::{Display, EnumIter, EnumString, EnumVariantNames};
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub struct SchemaRegistryErrResponse {
     pub error_code: i32,

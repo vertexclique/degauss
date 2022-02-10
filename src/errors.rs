@@ -28,19 +28,19 @@ use thiserror::Error;
 #[allow(dead_code)]
 #[derive(Error, Debug)]
 pub enum DegaussError {
-    #[error("File read error")]
+    #[error(transparent)]
     IO(#[from] std::io::Error),
 
-    #[error("Schema parsing error")]
+    #[error(transparent)]
     Schema(#[from] avro_rs::Error),
 
-    #[error("Serializing/Deserializing error")]
+    #[error(transparent)]
     Serde(#[from] serde_json::Error),
 
-    #[error("HTTP Client error")]
+    #[error(transparent)]
     HTTPClient(#[from] isahc::Error),
 
-    #[error("HTTP Protocol error")]
+    #[error(transparent)]
     Http(#[from] isahc::http::Error),
 
     #[error("Status Code `{error_code}` Message: {message}")]
