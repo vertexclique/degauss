@@ -132,7 +132,7 @@ checksum = "121d8a5b0346092c18a4b2fd6f620d7a06f0eb7ac0a45860939a0884bc579c56"
 dependencies = [
  "crossterm",
  "strum 0.24.1",
- "strum_macros 0.24.0",
+ "strum_macros 0.24.3",
  "unicode-width",
 ]
 
@@ -233,7 +233,7 @@ dependencies = [
  "serde_json",
  "structopt",
  "strum 0.23.0",
- "strum_macros 0.24.0",
+ "strum_macros 0.24.3",
  "thiserror",
 ]
 
@@ -1051,9 +1051,9 @@ dependencies = [
 
 [[package]]
 name = "strum_macros"
-version = "0.24.0"
+version = "0.24.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6878079b17446e4d3eba6192bb0a2950d5b14f0ed8424b852310e5a94345d0ef"
+checksum = "1e385be0d24f186b4ce2f9982191e7101bb737312ad61c1f2f984f34bcf85d59"
 dependencies = [
  "heck 0.4.0",
  "proc-macro2",
