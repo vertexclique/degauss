@@ -21,7 +21,7 @@
 // SOFTWARE.
 
 mod status;
-use avro_rs::Schema;
+use apache_avro::Schema;
 use degauss::compat::{DegaussCheck, DegaussCompatMode};
 use degauss::prelude::{Auth, SchemaRegistryClient, SchemaSubjectType, SerdeExt};
 use degauss::schema::FromFile;

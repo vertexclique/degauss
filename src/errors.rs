@@ -32,7 +32,7 @@ pub enum DegaussError {
     IO(#[from] std::io::Error),
 
     #[error("Schema parsing error")]
-    Schema(#[from] avro_rs::Error),
+    Schema(#[from] apache_avro::Error),
 
     #[error("Serializing/Deserializing error")]
     Serde(#[from] serde_json::Error),
