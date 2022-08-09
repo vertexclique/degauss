@@ -1,4 +1,4 @@
-use avro_rs::{schema_compatibility::SchemaCompatibility, Schema};
+use apache_avro::{schema_compatibility::SchemaCompatibility, Schema};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use strum_macros::{Display, EnumIter, EnumString, EnumVariantNames};

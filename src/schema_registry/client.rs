@@ -25,7 +25,7 @@ use crate::errors::DegaussError;
 use crate::schema_registry::types::*;
 
 use crate::schema_registry::ResponseExt;
-use avro_rs::Schema;
+use apache_avro::Schema;
 use isahc::{
     auth::{Authentication, Credentials},
     config::{RedirectPolicy, VersionNegotiation},
@@ -217,7 +217,7 @@ mod tests {
 
     use super::*;
     use crate::prelude::FromFile;
-    use avro_rs::Schema;
+    use apache_avro::Schema;
 
     fn test_client() -> SchemaRegistryClient {
         use std::env;

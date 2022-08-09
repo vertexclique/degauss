@@ -3,7 +3,7 @@
 #[cfg(test)]
 mod backward_transitive_compat {
 
-    use avro_rs::Schema;
+    use apache_avro::Schema;
     use degauss::prelude::*;
 
     #[test]
