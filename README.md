@@ -1,8 +1,10 @@
 
+<h1 align="center"><img src="art/degauss.jpeg" alt="Degauss" width="128" height="128"/></h1>
 <div align="center">
  <p><h1>DeGauss</h1> </p>
   <p><strong>Your friendly neighborhood Avro schema compatibility checker.</strong> </p>
 <p>
+<br />
 
 [![cicd](https://github.com/vertexclique/degauss/actions/workflows/cicd.yml/badge.svg)](https://github.com/vertexclique/degauss/actions/workflows/cicd.yml)
 [![Crates.io](https://img.shields.io/crates/v/degauss)](https://crates.io/crates/degauss)
