@@ -1,8 +1,8 @@
 use apache_avro::{schema_compatibility::SchemaCompatibility, Schema};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use strum_macros::{Display, EnumIter, EnumString, EnumVariantNames};
 use std::collections::VecDeque;
+use strum_macros::{Display, EnumIter, EnumString, EnumVariantNames};
 
 ///
 /// Possible compatibility mode array between schemas
@@ -124,11 +124,7 @@ impl DegaussCheck {
                 let mut x = VecDeque::from(schemas);
                 // [newest schema, old3, old2, old1, previous schemas]
                 match x.pop_front() {
-                    Some(s) => {
-                        x.iter().all(|e| {
-                            SchemaCompatibility::can_read(e, &s)
-                        })
-                    },
+                    Some(s) => x.iter().all(|e| SchemaCompatibility::can_read(e, &s)),
                     _ => false,
                 }
             }
@@ -138,9 +134,7 @@ impl DegaussCheck {
                 let mut x = VecDeque::from(schemas);
                 // [newest schema, old3, old2, old1, previous schemas]
                 match x.pop_front() {
-                    Some(s) => {
-                        x.iter().all(|e| SchemaCompatibility::can_read(&s, e))
-                    },
+                    Some(s) => x.iter().all(|e| SchemaCompatibility::can_read(&s, e)),
                     _ => false,
                 }
             }
@@ -151,9 +145,7 @@ impl DegaussCheck {
                 let mut x = VecDeque::from(schemas);
                 // [newest schema, old3, old2, old1, previous schemas]
                 match x.pop_front() {
-                    Some(s) => {
-                        x.iter().all(|e| SchemaCompatibility::mutual_read(&s, e))
-                    },
+                    Some(s) => x.iter().all(|e| SchemaCompatibility::mutual_read(&s, e)),
                     _ => false,
                 }
             }
