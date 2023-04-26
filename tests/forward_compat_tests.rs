@@ -21,8 +21,8 @@ mod forward_compat {
     #[test]
     fn adding_a_field_is_a_forward_compatible_change_second_try() {
         let schemas = vec![
-            Schema::parse_file("tests/data/schema3.avsc").unwrap(),
             Schema::parse_file("tests/data/schema1.avsc").unwrap(),
+            Schema::parse_file("tests/data/schema3.avsc").unwrap(),
         ];
         let dc = DegaussCheck(DegaussCompatMode::Forward);
         assert_eq!(dc.validate(&schemas), true);
@@ -51,11 +51,21 @@ mod forward_compat {
     #[test]
     fn removing_a_default_is_not_a_transitively_compatible_change() {
         let schemas = vec![
-            Schema::parse_file("tests/data/schema3.avsc").unwrap(),
             Schema::parse_file("tests/data/schema2.avsc").unwrap(),
+            Schema::parse_file("tests/data/schema3.avsc").unwrap(),
             Schema::parse_file("tests/data/schema1.avsc").unwrap(),
         ];
         let dc = DegaussCheck(DegaussCompatMode::Forward);
         assert_eq!(dc.validate(&schemas), true);
+    }
+
+    #[test]
+    fn removing_a_mandatory_field_is_not_forward_compatible_change() {
+        let schemas = vec![
+            Schema::parse_file("tests/data/schema3.avsc").unwrap(),
+            Schema::parse_file("tests/data/schema1.avsc").unwrap(),
+        ];
+        let dc = DegaussCheck(DegaussCompatMode::Forward);
+        assert_eq!(dc.validate(&schemas), false);
     }
 }

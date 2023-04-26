@@ -301,7 +301,7 @@ mod tests {
     }
 
     #[test]
-    fn test_check_compatibility() {
+    fn test_check_registrycompatibility() {
         let client = test_client();
         let topic = "test";
         let schema = test_schema();

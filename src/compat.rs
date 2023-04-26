@@ -2,6 +2,7 @@ use apache_avro::{schema_compatibility::SchemaCompatibility, Schema};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use strum_macros::{Display, EnumIter, EnumString, EnumVariantNames};
+use std::collections::VecDeque;
 
 ///
 /// Possible compatibility mode array between schemas
@@ -97,36 +98,57 @@ pub struct DegaussCheck(pub DegaussCompatMode);
 impl DegaussCheck {
     ///
     /// Validate given list of the schemas with the compat mode
+    /// [previous schemas..., old1, old2, old3, newest schema]
     pub fn validate(&self, schemas: &[Schema]) -> bool {
         match self.0 {
             DegaussCompatMode::Backward => {
-                // First existing schema, second validating schema
-                SchemaCompatibility::can_read(&schemas[1], &schemas[0])
+                // Backward compatibility: A new schema is backward compatible if it can be used to read the data
+                // written in the previous schema.
+                SchemaCompatibility::can_read(&schemas[0], &schemas[1])
             }
             DegaussCompatMode::Forward => {
-                // First validating schema, second existing schema
-                SchemaCompatibility::can_read(&schemas[0], &schemas[1])
+                // Forward compatibility: A new schema is forward compatible if the previous schema can read data written in this
+                // schema.
+                SchemaCompatibility::can_read(&schemas[1], &schemas[0])
             }
             DegaussCompatMode::Full => {
                 // Both vice versa
+                // Full compatibility: A new schema is fully compatible if it’s both backward and forward compatible.
                 SchemaCompatibility::mutual_read(&schemas[0], &schemas[1])
             }
             DegaussCompatMode::BackwardTransitive => {
-                let mut x = schemas.to_vec();
-                x.reverse();
-                x.windows(2)
-                    .all(|c| SchemaCompatibility::can_read(&c[1], &c[0]))
+                // Backward transitive compatibility: A new schema is backward compatible if it can be used to read the data
+                // written in all previous schemas.
+                let mut x = VecDeque::from(schemas.to_vec());
+                // [newest schema, old3, old2, old1, previous schemas]
+                match x.pop_back() {
+                    Some(s) => {
+                        x.iter().rev().all(|e| {
+                            SchemaCompatibility::can_read(e, &s)
+                        })
+                    },
+                    _ => false,
+                }
             }
             DegaussCompatMode::ForwardTransitive => {
+                // Forward transitive compatibility: A new schema is forward compatible if all previous schemas can read data written
+                // in this schema.
                 let mut x = schemas.to_vec();
                 x.reverse();
-                schemas
-                    .windows(2)
-                    .all(|c| SchemaCompatibility::can_read(&c[0], &c[1]))
+                // [newest schema, old3, old2, old1, previous schemas]
+                match x.pop() {
+                    Some(s) => {
+                        x.iter().all(|e| SchemaCompatibility::can_read(&s, e))
+                    },
+                    _ => false,
+                }
             }
             DegaussCompatMode::FullTransitive => {
+                // Full transitive compatibility: A new schema is fully compatible if it’s both transitively backward
+                // and transitively forward compatible with the entire schema history.
                 let mut x = schemas.to_vec();
                 x.reverse();
+                // [newest schema, old3, old2, old1, previous schemas]
                 schemas
                     .windows(2)
                     .all(|c| SchemaCompatibility::mutual_read(&c[0], &c[1]))
