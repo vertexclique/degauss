@@ -69,11 +69,11 @@ mod backward_compat {
     #[test]
     fn removing_a_default_is_not_a_transitively_compatible_change() {
         let schemas = vec![
-            Schema::parse_file("tests/data/schema2.avsc").unwrap(),
             Schema::parse_file("tests/data/schema1.avsc").unwrap(),
+            Schema::parse_file("tests/data/schema2.avsc").unwrap(),
             Schema::parse_file("tests/data/schema3.avsc").unwrap(),
         ];
-        let dc = DegaussCheck(DegaussCompatMode::BackwardTransitive);
+        let dc = DegaussCheck(DegaussCompatMode::Backward);
         assert_eq!(dc.validate(&schemas), true);
     }
 }

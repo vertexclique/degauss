@@ -59,3 +59,11 @@ cargo install degauss
     ```
     $ degauss schema-registry compatibility set --subject-type value --topic test --compatibility forward
     ```
+
+## Development
+
+Apart from integration tests, to run compatibility tests please use:
+
+```shell
+cargo test _compat
+```

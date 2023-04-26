@@ -98,18 +98,20 @@ pub struct DegaussCheck(pub DegaussCompatMode);
 impl DegaussCheck {
     ///
     /// Validate given list of the schemas with the compat mode
-    /// [previous schemas..., old1, old2, old3, newest schema]
+    // [previous schemas..., old1, old2, old3, newest schema]
     pub fn validate(&self, schemas: &[Schema]) -> bool {
+        let schemas: Vec<&Schema> = schemas.iter().rev().collect();
+        // [newest schema, old3, old2, old1, previous schemas]
         match self.0 {
             DegaussCompatMode::Backward => {
                 // Backward compatibility: A new schema is backward compatible if it can be used to read the data
                 // written in the previous schema.
-                SchemaCompatibility::can_read(&schemas[0], &schemas[1])
+                SchemaCompatibility::can_read(&schemas[1], &schemas[0])
             }
             DegaussCompatMode::Forward => {
                 // Forward compatibility: A new schema is forward compatible if the previous schema can read data written in this
                 // schema.
-                SchemaCompatibility::can_read(&schemas[1], &schemas[0])
+                SchemaCompatibility::can_read(&schemas[0], &schemas[1])
             }
             DegaussCompatMode::Full => {
                 // Both vice versa
@@ -119,11 +121,11 @@ impl DegaussCheck {
             DegaussCompatMode::BackwardTransitive => {
                 // Backward transitive compatibility: A new schema is backward compatible if it can be used to read the data
                 // written in all previous schemas.
-                let mut x = VecDeque::from(schemas.to_vec());
+                let mut x = VecDeque::from(schemas);
                 // [newest schema, old3, old2, old1, previous schemas]
-                match x.pop_back() {
+                match x.pop_front() {
                     Some(s) => {
-                        x.iter().rev().all(|e| {
+                        x.iter().all(|e| {
                             SchemaCompatibility::can_read(e, &s)
                         })
                     },
@@ -133,10 +135,9 @@ impl DegaussCheck {
             DegaussCompatMode::ForwardTransitive => {
                 // Forward transitive compatibility: A new schema is forward compatible if all previous schemas can read data written
                 // in this schema.
-                let mut x = schemas.to_vec();
-                x.reverse();
+                let mut x = VecDeque::from(schemas);
                 // [newest schema, old3, old2, old1, previous schemas]
-                match x.pop() {
+                match x.pop_front() {
                     Some(s) => {
                         x.iter().all(|e| SchemaCompatibility::can_read(&s, e))
                     },
@@ -146,12 +147,15 @@ impl DegaussCheck {
             DegaussCompatMode::FullTransitive => {
                 // Full transitive compatibility: A new schema is fully compatible if it’s both transitively backward
                 // and transitively forward compatible with the entire schema history.
-                let mut x = schemas.to_vec();
-                x.reverse();
                 // [newest schema, old3, old2, old1, previous schemas]
-                schemas
-                    .windows(2)
-                    .all(|c| SchemaCompatibility::mutual_read(&c[0], &c[1]))
+                let mut x = VecDeque::from(schemas);
+                // [newest schema, old3, old2, old1, previous schemas]
+                match x.pop_front() {
+                    Some(s) => {
+                        x.iter().all(|e| SchemaCompatibility::mutual_read(&s, e))
+                    },
+                    _ => false,
+                }
             }
         }
     }
