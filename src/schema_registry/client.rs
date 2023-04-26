@@ -225,14 +225,7 @@ mod tests {
         let password = env::var("DEGAUSS_SCHEMA_REGISTRY_PASS").unwrap();
         let url = env::var("DEGAUSS_SCHEMA_REGISTRY_URL").unwrap();
 
-        SchemaRegistryClient::new(
-            url,
-            Auth::Basic {
-                username: username,
-                password: password,
-            },
-        )
-        .unwrap()
+        SchemaRegistryClient::new(url, Auth::Basic { username, password }).unwrap()
     }
 
     fn test_schema() -> Schema {
