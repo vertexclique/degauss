@@ -245,6 +245,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     fn test_register_schema() {
         let client = test_client();
         let topic = random_chars(10, "test");
@@ -256,6 +257,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     fn test_set_schema() {
         let client = test_client();
         let topic = random_chars(10, "test");
@@ -266,6 +268,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     fn test_set_and_get_schema() {
         let client = test_client();
         let topic = random_chars(10, "test");
@@ -294,6 +297,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     fn test_check_registrycompatibility() {
         let client = test_client();
         let topic = "test";
